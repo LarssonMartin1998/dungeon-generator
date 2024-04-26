@@ -1,4 +1,4 @@
-local bsp_tree = require("src.bsp_tree")
+local bsp_handler = require("src.bsp_tree.bsp_handler")
 
 local M = {}
 
@@ -8,25 +8,12 @@ M.characters = {
     door = '+',
 }
 
-local function draw_map(map)
-    for y = 1, #map do
-        local row = map[y]
-        local row_string = ""
-
-        for x = 1, #row do
-            local cell = row[x]
-
-            row_string = row_string .. cell
-        end
-
-        print(row_string)
-    end
-end
-
 function M.run()
-    local map = bsp_tree.generate_with_bsp_trees()
-
-    draw_map(map)
+    local width = 50
+    local height = 50
+    local depth = 8
+    local min_size = 5
+    bsp_handler.generate_with_bsp_trees(width, height, depth, min_size)
 end
 
 return M
