@@ -56,7 +56,7 @@ local function split_leaf_recursive(leaf, depth, min_size)
 end
 
 function M.generate_leaves(width, height, depth, min_size)
-    local root_leaf = create_leaf(width, height, 0, 0)
+    local root_leaf = create_leaf(width, height, 1, 1)
     split_leaf_recursive(root_leaf, depth, min_size)
     return root_leaf
 end
