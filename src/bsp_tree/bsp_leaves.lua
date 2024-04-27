@@ -6,7 +6,7 @@ local function should_split_leaf(depth, leaf, min_size)
     return depth > 0 and room_for_two_leaves
 end
 
-local function should_split_horizontally(leaf)
+local function should_split_vertically(leaf)
     if leaf.width > leaf.height then
         return true
     elseif leaf.height > leaf.width then
@@ -36,7 +36,7 @@ local function split_leaf_recursive(leaf, depth, min_size)
         return
     end
 
-    if should_split_horizontally(leaf) then
+    if should_split_vertically(leaf) then
         local left_width, right_width = split_axis(leaf.width, min_size)
         leaf.children = {
             create_leaf(left_width, leaf.height, leaf.x, leaf.y),
