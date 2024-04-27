@@ -89,6 +89,7 @@ local function debug_init_map(width, height)
     return map
 end
 
+
 local function debug_add_rooms_to_map(rooms, map, width, height)
     for i, room in ipairs(rooms) do
         for y = 1, height do
@@ -98,6 +99,17 @@ local function debug_add_rooms_to_map(rooms, map, width, height)
                         map[y][x] = i
                     end
                 end
+            end
+        end
+    end
+end
+
+
+local function debug_add_rooms_to_map_new(rooms, map)
+    for i, room in ipairs(rooms) do
+        for y = room.y, room.y + room.height do
+            for x = room.x, room.x + room.width do
+                map[y][x] = i
             end
         end
     end
@@ -120,7 +132,24 @@ function M.generate_rooms_from_leaves(root_leaf, width, height, padding, min_siz
     local rooms = generate_rooms(end_leaves, padding, min_size)
 
     local map = debug_init_map(width, height)
-    debug_add_rooms_to_map(rooms, map, width, height)
+    -- local iterations = 10000
+    --
+    -- local start_time = os.clock()
+    -- for _ = 1, iterations do
+    --     debug_add_rooms_to_map(rooms, map, width, height)
+    -- end
+    -- local end_time = os.clock()
+    -- local old_perf = (end_time - start_time) / iterations
+    --
+    --
+    -- start_time = os.clock()
+    -- for _ = 1, iterations do
+    --     debug_add_rooms_to_map_new(rooms, map)
+    -- end
+    -- end_time = os.clock()
+    -- local new_perf = (end_time - start_time) / iterations
+    -- print("old=" .. old_perf .. "\nnew=" .. new_perf)
+    debug_add_rooms_to_map_new(rooms, map)
     debug_draw_map(map, width, height)
 end
 
