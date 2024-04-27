@@ -9,8 +9,8 @@ M.characters = {
 }
 
 function M.run()
-    local width = 60
-    local height = 150
+    local width = 150
+    local height = 60
     local depth = 10
     local min_size = 10
     local room_padding = 2

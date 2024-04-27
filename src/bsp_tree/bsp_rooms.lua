@@ -79,10 +79,10 @@ end
 local function debug_init_map(width, height)
     local map = {}
 
-    for x = 1, width do
-        map[x] = {}
-        for y = 1, height do
-            map[x][y] = " "
+    for y = 1, height do
+        map[y] = {}
+        for x = 1, width do
+            map[y][x] = " "
         end
     end
 
@@ -91,11 +91,11 @@ end
 
 local function debug_add_rooms_to_map(rooms, map, width, height)
     for i, room in ipairs(rooms) do
-        for x = 1, width do
-            if x >= room.x and x < room.x + room.width then
-                for y = 1, height do
-                    if y >= room.y and y < room.y + room.height then
-                        map[x][y] = i
+        for y = 1, height do
+            if y >= room.y and y < room.y + room.height then
+                for x = 1, width do
+                    if x >= room.x and x < room.x + room.width then
+                        map[y][x] = i
                     end
                 end
             end
@@ -104,10 +104,10 @@ local function debug_add_rooms_to_map(rooms, map, width, height)
 end
 
 local function debug_draw_map(map, width, height)
-    for x = 1, width do
+    for y = 1, height do
         local line = ""
-        for y = 1, height do
-            line = line .. decimal_to_base(map[x][y])
+        for x = 1, width do
+            line = line .. decimal_to_base(map[y][x])
         end
         print(line)
     end
