@@ -1,32 +1,5 @@
 local M = {}
 
-
-function decimal_to_base(input)
-    local num = tonumber(input)
-    if not num then
-        return input
-    end
-
-    if num < 0 then
-        error("Number must be non-negative")
-    end
-
-    local chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    local base = #chars -- 62
-    if num == 0 then
-        return "0"
-    end
-
-    local result = ""
-    while num > 0 do
-        local index = (num % base) + 1
-        result = chars:sub(index, index) .. result
-        num = math.floor(num / base)
-    end
-
-    return result
-end
-
 local function is_end_leaf(leaf)
     return leaf.children == nil
 end
@@ -76,81 +49,11 @@ local function generate_rooms(end_leaves, padding, min_size)
     return rooms
 end
 
-local function debug_init_map(width, height)
-    local map = {}
-
-    for y = 1, height do
-        map[y] = {}
-        for x = 1, width do
-            map[y][x] = " "
-        end
-    end
-
-    return map
-end
-
-
-local function debug_add_rooms_to_map(rooms, map, width, height)
-    for i, room in ipairs(rooms) do
-        for y = 1, height do
-            if y >= room.y and y < room.y + room.height then
-                for x = 1, width do
-                    if x >= room.x and x < room.x + room.width then
-                        map[y][x] = i
-                    end
-                end
-            end
-        end
-    end
-end
-
-
-local function debug_add_rooms_to_map_new(rooms, map)
-    for i, room in ipairs(rooms) do
-        for y = room.y, room.y + room.height do
-            for x = room.x, room.x + room.width do
-                map[y][x] = i
-            end
-        end
-    end
-end
-
-local function debug_draw_map(map, width, height)
-    for y = 1, height do
-        local line = ""
-        for x = 1, width do
-            line = line .. decimal_to_base(map[y][x])
-        end
-        print(line)
-    end
-end
-
 function M.generate_rooms_from_leaves(root_leaf, width, height, padding, min_size)
     local end_leaves = {}
     populate_end_leaves(end_leaves, root_leaf)
 
-    local rooms = generate_rooms(end_leaves, padding, min_size)
-
-    local map = debug_init_map(width, height)
-    -- local iterations = 10000
-    --
-    -- local start_time = os.clock()
-    -- for _ = 1, iterations do
-    --     debug_add_rooms_to_map(rooms, map, width, height)
-    -- end
-    -- local end_time = os.clock()
-    -- local old_perf = (end_time - start_time) / iterations
-    --
-    --
-    -- start_time = os.clock()
-    -- for _ = 1, iterations do
-    --     debug_add_rooms_to_map_new(rooms, map)
-    -- end
-    -- end_time = os.clock()
-    -- local new_perf = (end_time - start_time) / iterations
-    -- print("old=" .. old_perf .. "\nnew=" .. new_perf)
-    debug_add_rooms_to_map_new(rooms, map)
-    debug_draw_map(map, width, height)
+    return generate_rooms(end_leaves, padding, min_size)
 end
 
 return M
