@@ -9,12 +9,12 @@ M.characters = {
 }
 
 function M.run()
-    local width = 150
-    local height = 60
-    local depth = 10
-    local min_size = 10
-    local room_padding = 2
-    local room_min_size = 5
+    local width = 200
+    local height = 50
+    local depth = 3
+    local min_size = 20
+    local room_padding = 4
+    local room_min_size = 10
 
     bsp_handler.generate_with_bsp_trees(width, height, depth, min_size, room_padding, room_min_size)
 end
