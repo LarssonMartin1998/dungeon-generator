@@ -1,4 +1,5 @@
 local mathutils = require("src.utility.math")
+local misc = require("src.utility.misc")
 
 local M = {}
 
@@ -9,7 +10,7 @@ local function create_node(x, y)
         estimated_cost_to_goal = 0,       -- (h)
         x = x,
         y = y,
-        is_passable = false,
+        is_passable = true,
         parent = nil
     }
 end
@@ -43,15 +44,8 @@ local function check_neighbour(nodes, width, height, x, y)
 end
 
 local function get_passable_neighbours(node, nodes, width, height)
-    local directions = {
-        { 0,  1 },  -- Up
-        { 1,  0 },  -- Right
-        { 0,  -1 }, -- Down
-        { -1, 0 }   -- Left
-    }
-
     local neighbors = {}
-    for _, dir in ipairs(directions) do
+    for _, dir in ipairs(misc.directions) do
         local neighbour_x = node.x + dir[1]
         local neighbour_y = node.y + dir[2]
 
@@ -115,11 +109,15 @@ function M.calculate_path(nodes, width, height, start_x, start_y, goal_x, goal_y
         for _, neighbor in ipairs(neighbors) do
             local tentative_cost = current.cost_from_start + 1
 
-            if tentative_cost < neighbor.cost_from_start then
+            if neighbor.is_passable and tentative_cost < neighbor.cost_from_start then
                 neighbor.parent = current
                 neighbor.cost_from_start = tentative_cost
-                neighbor.estimated_cost_to_goal = mathutils.manhattan_distance(neighbor.x, neighbor.y, goal_node.x,
-                    goal_node.y)
+                neighbor.estimated_cost_to_goal = mathutils.get_manhattan_distance(
+                    neighbor.x,
+                    neighbor.y,
+                    goal_node.x,
+                    goal_node.y
+                )
                 neighbor.total_estimated_cost = neighbor.cost_from_start + neighbor.estimated_cost_to_goal
 
                 if not node_in_set(open_set, neighbor) then
