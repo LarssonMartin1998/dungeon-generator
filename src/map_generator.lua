@@ -28,8 +28,8 @@ end
 function M.run()
     local config = {
         map = {
-            width = 154,
-            height = 54
+            width = 130,
+            height = 48
         },
         leaves = {
             depth = 3,
