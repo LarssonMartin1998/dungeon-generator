@@ -90,7 +90,7 @@ function M.calculate_path(nodes, width, height, start_x, start_y, goal_x, goal_y
     end
 
     start_node.cost_from_start = 0
-    start_node.estimated_cost_to_goal = mathutils.get_manhattan_distance(start_x, start_y, goal_x, goal_y)
+    start_node.estimated_cost_to_goal = mathutils.get_euclidian_distance(start_x, start_y, goal_x, goal_y)
     start_node.total_estimated_cost = start_node.estimated_cost_to_goal
 
     local open_set = {}
@@ -113,7 +113,7 @@ function M.calculate_path(nodes, width, height, start_x, start_y, goal_x, goal_y
             if neighbor.is_passable and tentative_cost < neighbor.cost_from_start then
                 neighbor.parent = current
                 neighbor.cost_from_start = tentative_cost
-                neighbor.estimated_cost_to_goal = mathutils.get_manhattan_distance(
+                neighbor.estimated_cost_to_goal = mathutils.get_euclidian_distance(
                     neighbor.x,
                     neighbor.y,
                     goal_node.x,
