@@ -4,14 +4,14 @@ local function is_end_leaf(leaf)
     return leaf.children == nil
 end
 
-local function populate_end_leaves(end_leaves, leaf)
+local function populate_end_leaves_recursive(end_leaves, leaf)
     if is_end_leaf(leaf) then
         table.insert(end_leaves, leaf)
         return
     end
 
     for _, child in ipairs(leaf.children) do
-        populate_end_leaves(end_leaves, child)
+        populate_end_leaves_recursive(end_leaves, child)
     end
 end
 
@@ -51,7 +51,7 @@ end
 
 function M.generate_rooms_from_leaves(root_leaf, rooms_config)
     local end_leaves = {}
-    populate_end_leaves(end_leaves, root_leaf)
+    populate_end_leaves_recursive(end_leaves, root_leaf)
 
     return generate_rooms(end_leaves, rooms_config.padding, rooms_config.min_size)
 end

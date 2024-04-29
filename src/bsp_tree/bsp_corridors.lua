@@ -49,6 +49,15 @@ local function set_rooms_as_blocked_in_pathfinder(nodes, rooms, width, height)
     end
 end
 
+local function sort_rooms_by_distance_to_start(rooms)
+    local map_start = { x = 1, y = 1 }
+    table.sort(rooms, function(room1, room2)
+        local distance1 = math.abs(room1.center.x - map_start.x) + math.abs(room1.center.y - map_start.y)
+        local distance2 = math.abs(room2.center.x - map_start.x) + math.abs(room2.center.y - map_start.y)
+        return distance1 < distance2
+    end)
+end
+
 local is_adjacent_node_and_not_on_path = function(nodes, path, i, x, y)
     if i == 1 or i == #path then
         return false
@@ -149,13 +158,6 @@ local function create_corridor_from_path(start, goal, width, height, pathfinding
 end
 
 local function connect_rooms_with_corridors(rooms, width, height, pathfinding_nodes)
-    local map_start = { x = 1, y = 1 }
-    table.sort(rooms, function(room1, room2)
-        local distance1 = math.abs(room1.center.x - map_start.x) + math.abs(room1.center.y - map_start.y)
-        local distance2 = math.abs(room2.center.x - map_start.x) + math.abs(room2.center.y - map_start.y)
-        return distance1 < distance2
-    end)
-
     local corridors = {}
     for i = 1, #rooms - 1 do
         local room1 = rooms[i]
@@ -183,6 +185,7 @@ function M.generate_corridors(rooms, map_config)
 
     calculate_room_center(rooms)
     calculate_room_perimeters(rooms)
+    sort_rooms_by_distance_to_start(rooms)
 
     local corridors = connect_rooms_with_corridors(rooms, map_config.width, map_config.height, pathfinding_nodes)
     return corridors
