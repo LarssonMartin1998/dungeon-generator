@@ -49,11 +49,11 @@ local function generate_rooms(end_leaves, padding, min_size)
     return rooms
 end
 
-function M.generate_rooms_from_leaves(root_leaf, width, height, padding, min_size)
+function M.generate_rooms_from_leaves(root_leaf, rooms_config)
     local end_leaves = {}
     populate_end_leaves(end_leaves, root_leaf)
 
-    return generate_rooms(end_leaves, padding, min_size)
+    return generate_rooms(end_leaves, rooms_config.padding, rooms_config.min_size)
 end
 
 return M

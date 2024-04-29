@@ -2,21 +2,50 @@ local bsp_handler = require("src.bsp_tree.bsp_handler")
 
 local M = {}
 
-M.characters = {
-    wall = '#',
-    floor = '.',
-    door = '+',
-}
+local function init_map(width, height)
+    local map = {}
+
+    for y = 1, height do
+        map[y] = {}
+        for x = 1, width do
+            map[y][x] = " "
+        end
+    end
+
+    return map
+end
+
+local function draw_map(map, width, height)
+    for y = 1, height do
+        local line = ""
+        for x = 1, width do
+            line = line .. map[y][x]
+        end
+        print(line)
+    end
+end
 
 function M.run()
-    local width = 200
-    local height = 50
-    local depth = 3
-    local min_size = 20
-    local room_padding = 4
-    local room_min_size = 10
+    local config = {
+        map = {
+            width = 154,
+            height = 54
+        },
+        leaves = {
+            depth = 3,
+            map_padding = 8,
+            min_size = 14
+        },
+        rooms = {
+            padding = 4,
+            min_size = 6
+        }
+    }
 
-    bsp_handler.generate_with_bsp_trees(width, height, depth, min_size, room_padding, room_min_size)
+    local map = init_map(config.map.width, config.map.height)
+    bsp_handler.generate_with_bsp_trees(map, config)
+
+    draw_map(map, config.map.width, config.map.height)
 end
 
 return M

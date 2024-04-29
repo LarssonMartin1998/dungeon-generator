@@ -49,57 +49,21 @@ local function set_rooms_as_blocked_in_pathfinder(nodes, rooms, width, height)
     end
 end
 
-local function debug_init_map(width, height)
-    local map = {}
-
-    for y = 1, height do
-        map[y] = {}
-        for x = 1, width do
-            if x == 1 or x == width or y == 1 or y == height then
-                map[y][x] = "@"
-            else
-                map[y][x] = " "
-            end
-        end
+local is_adjacent_node_and_not_on_path = function(nodes, path, i, x, y)
+    if i == 1 or i == #path then
+        return false
     end
 
-    return map
-end
-
-local function debug_draw_map(map, width, height)
-    for y = 1, height do
-        local line = ""
-        for x = 1, width do
-            line = line .. map[y][x]
-        end
-        print(line)
+    if not nodes[y][x].is_passable then
+        return false
     end
-end
 
-local function is_edge(x, y, room)
-    return x == room.x or x == room.x + room.width or y == room.y or y == room.y + room.height
-end
-
-local function debug_add_rooms_to_map(rooms, map)
-    for _, room in ipairs(rooms) do
-        for y = room.y, room.y + room.height do
-            for x = room.x, room.x + room.width do
-                if is_edge(x, y, room) then
-                    map[y][x] = "#"
-                else
-                    map[y][x] = "."
-                end
-            end
-        end
+    local is_next_node = path[i].x == x and path[i].y == y
+    if is_next_node then
+        return false
     end
-end
 
-local function debug_add_corridors_to_map(corridors, map)
-    for _, corridor in ipairs(corridors) do
-        for _, node in ipairs(corridor) do
-            map[node.y][node.x] = "."
-        end
-    end
+    return true
 end
 
 local function update_pathfinding_nodes_with_corridor(nodes, path)
@@ -107,8 +71,15 @@ local function update_pathfinding_nodes_with_corridor(nodes, path)
         return false
     end
 
-    for _, section in ipairs(path) do
+    for i, section in ipairs(path) do
         nodes[section.y][section.x].is_passable = false
+        for _, dir in ipairs(misc.directions) do
+            local x = section.x + dir[1]
+            local y = section.y + dir[2]
+            if is_adjacent_node_and_not_on_path(nodes, path, i, x, y) then
+                nodes[y][x].is_passable = false
+            end
+        end
     end
 
     return true
@@ -140,9 +111,11 @@ local function find_closest_perimeter_points(room1, room2)
     return closest_point1, closest_point2
 end
 
-local function set_door_passable(room, door, pathfinding_nodes, is_passable)
-    pathfinding_nodes[door.y][door.x].is_passable = is_passable
-    pathfinding_nodes[door.y + door.direction[2]][door.x + door.direction[1]].is_passable = is_passable
+local function set_path_endpoint_as_passable(endpoint, pathfinding_nodes, is_passable)
+    pathfinding_nodes[endpoint.y][endpoint.x].is_passable = is_passable
+    -- All of the rooms have an extra tile around them that is blocked to avoid pathfinding licking the walls
+    -- So we need to set that tile as passable as well
+    pathfinding_nodes[endpoint.y + endpoint.direction[2]][endpoint.x + endpoint.direction[1]].is_passable = is_passable
 end
 
 local function create_door(room, point)
@@ -186,16 +159,15 @@ local function connect_rooms_with_corridors(rooms, width, height, pathfinding_no
     local corridors = {}
     for i = 1, #rooms - 1 do
         local room1 = rooms[i]
-        local is_last_room = i == #rooms
         local room2 = rooms[i + 1]
 
         local start, goal = find_closest_perimeter_points(room1, room2)
-        set_door_passable(room1, start, pathfinding_nodes, true)
-        set_door_passable(room2, goal, pathfinding_nodes, true)
+        set_path_endpoint_as_passable(start, pathfinding_nodes, true)
+        set_path_endpoint_as_passable(goal, pathfinding_nodes, true)
 
         if not create_corridor_from_path(start, goal, width, height, pathfinding_nodes, corridors) then
-            set_door_passable(room1, start, pathfinding_nodes, false)
-            set_door_passable(room2, goal, pathfinding_nodes, false)
+            set_path_endpoint_as_passable(start, pathfinding_nodes, false)
+            set_path_endpoint_as_passable(goal, pathfinding_nodes, false)
         else
             create_door(room1, start)
             create_door(room2, goal)
@@ -205,20 +177,15 @@ local function connect_rooms_with_corridors(rooms, width, height, pathfinding_no
     return corridors
 end
 
-function M.generate_corridors(rooms, width, height)
-    local pathfinding_nodes = a_star.create_nodes(width, height)
-    set_rooms_as_blocked_in_pathfinder(pathfinding_nodes, rooms, width, height)
+function M.generate_corridors(rooms, map_config)
+    local pathfinding_nodes = a_star.create_nodes(map_config.width, map_config.height)
+    set_rooms_as_blocked_in_pathfinder(pathfinding_nodes, rooms, map_config.width, map_config.height)
 
     calculate_room_center(rooms)
     calculate_room_perimeters(rooms)
 
-    local corridors = connect_rooms_with_corridors(rooms, width, height, pathfinding_nodes)
-
-    local map = debug_init_map(width, height)
-    debug_add_rooms_to_map(rooms, map)
-    debug_add_corridors_to_map(corridors, map)
-
-    debug_draw_map(map, width, height)
+    local corridors = connect_rooms_with_corridors(rooms, map_config.width, map_config.height, pathfinding_nodes)
+    return corridors
 end
 
 return M

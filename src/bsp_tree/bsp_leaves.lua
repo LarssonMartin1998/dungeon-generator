@@ -55,9 +55,13 @@ local function split_leaf_recursive(leaf, depth, min_size)
     end
 end
 
-function M.generate_leaves(width, height, depth, min_size)
-    local root_leaf = create_leaf(width, height, 1, 1)
-    split_leaf_recursive(root_leaf, depth, min_size)
+function M.generate_leaves(map_config, leaves_config)
+    local root_leaf = create_leaf(
+        map_config.width - leaves_config.map_padding,
+        map_config.height - leaves_config.map_padding,
+        leaves_config.map_padding,
+        leaves_config.map_padding)
+    split_leaf_recursive(root_leaf, leaves_config.depth, leaves_config.min_size)
     return root_leaf
 end
 

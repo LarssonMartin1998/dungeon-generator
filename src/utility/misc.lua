@@ -7,4 +7,11 @@ M.directions = {
     { -1, 0 }   -- Left
 }
 
+M.map_char = {
+    empty = " ",
+    wall = "#",
+    floor = ".",
+    door = "+"
+}
+
 return M

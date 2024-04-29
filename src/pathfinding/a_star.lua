@@ -3,14 +3,15 @@ local misc = require("src.utility.misc")
 
 local M = {}
 
-local function create_node(x, y)
+local function create_node(x, y, width, height)
+    local is_passable = x > 1 and x < width and y > 1 and y < height
     return {
         total_estimated_cost = math.huge, -- (f)
         cost_from_start = math.huge,      -- (g)
         estimated_cost_to_goal = 0,       -- (h)
         x = x,
         y = y,
-        is_passable = true,
+        is_passable = is_passable,
         parent = nil
     }
 end
@@ -20,7 +21,7 @@ function M.create_nodes(width, height)
     for y = 1, height do
         nodes[y] = {}
         for x = 1, width do
-            nodes[y][x] = create_node(x, y)
+            nodes[y][x] = create_node(x, y, width, height)
         end
     end
     return nodes
