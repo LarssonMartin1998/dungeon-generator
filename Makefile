@@ -1,7 +1,4 @@
-.PHONY: run test
+.PHONY: run
 
 run:
 	@clear && lua main.lua
-
-test:
-	@busted spec/
