@@ -1,6 +1,8 @@
 local mathutils = require("src.utility.math")
 local misc = require("src.utility.misc")
 
+-- This entire A* implementation can be heavily optimized, however, I don't think that it's
+-- necessary for this project. But if you were to do it, it could be done by using a priority queue.
 local M = {}
 
 local function create_node(x, y, width, height)
