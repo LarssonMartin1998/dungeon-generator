@@ -151,20 +151,39 @@ local function create_door(room, point)
 end
 
 local function connect_rooms_with_corridors(rooms, width, height, pathfinding_nodes)
-    local corridors = {}
-    for i = 1, #rooms - 1 do
-        local room1 = rooms[i]
-        local room2 = rooms[i + 1]
+    local rooms_copy = {}
+    for _, room in ipairs(rooms) do
+        table.insert(rooms_copy, room)
+    end
 
-        local paths = calculate_possible_paths_between_rooms(room1, room2, width, height, pathfinding_nodes)
+    local corridors = {}
+    local current_room = rooms_copy[1]
+    table.remove(rooms_copy, 1) -- Start with the first room and remove it from the copy
+
+    while #rooms_copy > 0 do
+        -- Find the next closest room
+        table.sort(rooms_copy, function(room1, room2)
+            local distance1 = math.abs(room1.center.x - current_room.center.x) +
+                math.abs(room1.center.y - current_room.center.y)
+            local distance2 = math.abs(room2.center.x - current_room.center.x) +
+                math.abs(room2.center.y - current_room.center.y)
+            return distance1 < distance2
+        end)
+
+        local next_room = rooms_copy[1]
+        table.remove(rooms_copy, 1) -- Remove the closest room from the copy
+
+        local paths = calculate_possible_paths_between_rooms(current_room, next_room, width, height, pathfinding_nodes)
         local shortest_path = get_shortest_path(paths)
 
         if shortest_path then
             update_pathfinding_nodes_with_corridor(pathfinding_nodes, shortest_path)
             table.insert(corridors, shortest_path)
-            create_door(room1, shortest_path[1])
-            create_door(room2, shortest_path[#shortest_path])
+            create_door(current_room, shortest_path[1])
+            create_door(next_room, shortest_path[#shortest_path])
         end
+
+        current_room = next_room -- Move to the next room
     end
 
     return corridors
