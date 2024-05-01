@@ -1,5 +1,6 @@
 local a_star = require("src.pathfinding.a_star")
 local misc = require("src.utility.misc")
+local mathutils = require("src.utility.math")
 
 local M = {}
 
@@ -54,8 +55,8 @@ end
 -- Additionally, in my opinion, the sorting has made the generation output way more interesting.
 local function sort_rooms_by_distance_to_position(rooms, position)
     table.sort(rooms, function(room1, room2)
-        local distance1 = math.abs(room1.center.x - position.x) + math.abs(room1.center.y - position.y)
-        local distance2 = math.abs(room2.center.x - position.x) + math.abs(room2.center.y - position.y)
+        local distance1 = mathutils.get_distance_sqrd(room1.center.x, room1.center.y, position.x, position.y)
+        local distance2 = mathutils.get_distance_sqrd(room2.center.x, room2.center.y, position.x, position.y)
         return distance1 < distance2
     end)
 end

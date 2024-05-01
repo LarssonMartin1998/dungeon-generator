@@ -107,7 +107,7 @@ function M.calculate_path(nodes, width, height, start_x, start_y, goal_x, goal_y
 
     local start_data = get_or_create_path_data(context, start_node)
     start_data.cost_from_start = 0
-    start_data.estimated_cost_to_goal = mathutils.get_euclidian_distance(start_x, start_y, goal_x, goal_y)
+    start_data.estimated_cost_to_goal = mathutils.get_distance_sqrd(start_x, start_y, goal_x, goal_y)
     start_data.total_estimated_cost = start_data.estimated_cost_to_goal
 
     local open_set = {}
@@ -133,7 +133,7 @@ function M.calculate_path(nodes, width, height, start_x, start_y, goal_x, goal_y
             if tentative_cost < neighbor_data.cost_from_start then
                 neighbor_data.parent = current_data
                 neighbor_data.cost_from_start = tentative_cost
-                neighbor_data.estimated_cost_to_goal = mathutils.get_euclidian_distance(
+                neighbor_data.estimated_cost_to_goal = mathutils.get_distance_sqrd(
                     neighbor.x,
                     neighbor.y,
                     goal_node.x,
