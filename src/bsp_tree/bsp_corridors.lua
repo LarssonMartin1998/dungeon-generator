@@ -76,10 +76,6 @@ local is_adjacent_node_and_not_on_path = function(nodes, path, i, x, y)
 end
 
 local function update_pathfinding_nodes_with_corridor(nodes, path)
-    if not path then
-        return false
-    end
-
     for i, section in ipairs(path) do
         nodes[section.y][section.x].is_passable = false
         for _, dir in ipairs(misc.directions) do
@@ -90,34 +86,6 @@ local function update_pathfinding_nodes_with_corridor(nodes, path)
             end
         end
     end
-
-    return true
-end
-
-local function find_closest_perimeter_points(room1, room2)
-    local closest_distance = math.huge
-    local closest_point1 = nil
-    local closest_point2 = nil
-
-    for _, point1 in pairs(room1.perimeter) do
-        for _, point2 in pairs(room2.perimeter) do
-            if point1.is_free and point2.is_free then
-                local distance = math.abs(point1.x - point2.x) + math.abs(point1.y - point2.y)
-                if distance < closest_distance then
-                    closest_distance = distance
-                    closest_point1 = point1
-                    closest_point2 = point2
-                end
-            end
-        end
-    end
-
-    if closest_point1 and closest_point2 then
-        closest_point1.is_free = false
-        closest_point2.is_free = false
-    end
-
-    return closest_point1, closest_point2
 end
 
 local function set_path_endpoint_as_passable(endpoint, pathfinding_nodes, is_passable)
@@ -125,6 +93,50 @@ local function set_path_endpoint_as_passable(endpoint, pathfinding_nodes, is_pas
     -- All of the rooms have an extra tile around them that is blocked to avoid pathfinding licking the walls
     -- So we need to set that tile as passable as well
     pathfinding_nodes[endpoint.y + endpoint.direction[2]][endpoint.x + endpoint.direction[1]].is_passable = is_passable
+end
+
+local function calculate_possible_paths_between_rooms(room1, room2, width, height, pathfinding_nodes)
+    local paths = {}
+
+    for _, point1 in pairs(room1.perimeter) do
+        if point1.is_free then
+            for _, point2 in pairs(room2.perimeter) do
+                if point2.is_free then
+                    -- Need to set the both points, and the tile next to them as passable
+                    -- So the pathfinding can find a path between them, remember to revert this after the path is found
+                    set_path_endpoint_as_passable(point1, pathfinding_nodes, true)
+                    set_path_endpoint_as_passable(point2, pathfinding_nodes, true)
+
+                    local path = a_star.calculate_path(
+                        pathfinding_nodes,
+                        width,
+                        height,
+                        point1.x,
+                        point1.y,
+                        point2.x,
+                        point2.y
+                    )
+
+                    set_path_endpoint_as_passable(point1, pathfinding_nodes, false)
+                    set_path_endpoint_as_passable(point2, pathfinding_nodes, false)
+
+                    if path then
+                        table.insert(paths, path)
+                    end
+                end
+            end
+        end
+    end
+
+    return paths
+end
+
+local function get_shortest_path(paths)
+    table.sort(paths, function(path1, path2)
+        return #path1 < #path2
+    end)
+
+    return paths[1] or nil
 end
 
 local function create_door(room, point)
@@ -138,41 +150,20 @@ local function create_door(room, point)
     })
 end
 
-local function create_corridor_from_path(start, goal, width, height, pathfinding_nodes, corridors)
-    local path = a_star.calculate_path(
-        pathfinding_nodes,
-        width,
-        height,
-        start.x,
-        start.y,
-        goal.x,
-        goal.y
-    )
-
-    if not update_pathfinding_nodes_with_corridor(pathfinding_nodes, path) then
-        return false
-    end
-
-    table.insert(corridors, path)
-    return true
-end
-
 local function connect_rooms_with_corridors(rooms, width, height, pathfinding_nodes)
     local corridors = {}
     for i = 1, #rooms - 1 do
         local room1 = rooms[i]
         local room2 = rooms[i + 1]
 
-        local start, goal = find_closest_perimeter_points(room1, room2)
-        set_path_endpoint_as_passable(start, pathfinding_nodes, true)
-        set_path_endpoint_as_passable(goal, pathfinding_nodes, true)
+        local paths = calculate_possible_paths_between_rooms(room1, room2, width, height, pathfinding_nodes)
+        local shortest_path = get_shortest_path(paths)
 
-        if not create_corridor_from_path(start, goal, width, height, pathfinding_nodes, corridors) then
-            set_path_endpoint_as_passable(start, pathfinding_nodes, false)
-            set_path_endpoint_as_passable(goal, pathfinding_nodes, false)
-        else
-            create_door(room1, start)
-            create_door(room2, goal)
+        if shortest_path then
+            update_pathfinding_nodes_with_corridor(pathfinding_nodes, shortest_path)
+            table.insert(corridors, shortest_path)
+            create_door(room1, shortest_path[1])
+            create_door(room2, shortest_path[#shortest_path])
         end
     end
 
@@ -187,8 +178,7 @@ function M.generate_corridors(rooms, map_config)
     calculate_room_perimeters(rooms)
     sort_rooms_by_distance_to_start(rooms)
 
-    local corridors = connect_rooms_with_corridors(rooms, map_config.width, map_config.height, pathfinding_nodes)
-    return corridors
+    return connect_rooms_with_corridors(rooms, map_config.width, map_config.height, pathfinding_nodes)
 end
 
 return M
