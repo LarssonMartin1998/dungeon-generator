@@ -141,17 +141,6 @@ function M.calculate_path(nodes, width, height, start_x, start_y, goal_x, goal_y
             return data1.total_estimated_cost < data2.total_estimated_cost
         end)
 
-        for y = 1, height do
-            local line = ""
-            for x = 1, width do
-                local printdebug = din_mor(start_node, goal_node, nodes[y][x], open_set, context)
-                line = line .. printdebug
-            end
-            print(line)
-        end
-
-        os.execute("sleep 0.0001")
-        os.execute("clear")
         local current_data = table.remove(open_set, 1)
         local current_node = nodes[current_data.y][current_data.x]
 
