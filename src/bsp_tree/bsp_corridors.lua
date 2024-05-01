@@ -95,7 +95,7 @@ local function set_path_endpoint_as_passable(endpoint, pathfinding_nodes, is_pas
     pathfinding_nodes[endpoint.y + endpoint.direction[2]][endpoint.x + endpoint.direction[1]].is_passable = is_passable
 end
 
-local function calculate_possible_paths_between_rooms(room1, room2, width, height, pathfinding_nodes)
+local function calculate_possible_paths_between_rooms(room1, room2, width, height, pathfinding_nodes, corridors)
     local paths = {}
 
     for _, point1 in pairs(room1.perimeter) do
@@ -119,6 +119,65 @@ local function calculate_possible_paths_between_rooms(room1, room2, width, heigh
 
                     set_path_endpoint_as_passable(point1, pathfinding_nodes, false)
                     set_path_endpoint_as_passable(point2, pathfinding_nodes, false)
+
+                    if path then
+                        table.insert(paths, path)
+                    end
+                end
+            end
+        end
+    end
+
+    for _, corridor in ipairs(corridors) do
+        if corridor.connected_rooms[room1] then
+            for _, room_point in pairs(room2.perimeter) do
+                if room_point.is_free then
+                    local corridor_point_index = math.floor(#corridor.path * 0.5)
+                    local corridor_point = corridor.path[corridor_point_index]
+
+                    local changed_nodes = { { x = corridor_point.x, y = corridor_point.y } }
+                    pathfinding_nodes[corridor_point.y][corridor_point.x].is_passable = true
+                    for _, dir in ipairs(misc.directions) do
+                        local x = corridor_point.x + dir[1]
+                        local y = corridor_point.y + dir[2]
+                        if not pathfinding_nodes[y][x].is_passable then
+                            pathfinding_nodes[y][x].is_passable = true
+                            table.insert(changed_nodes, { x = x, y = y })
+                        end
+                    end
+
+                    set_path_endpoint_as_passable(room_point, pathfinding_nodes, true)
+
+                    -- Draw the blocked nodes as x, otherwise " " for debugging
+                    for y = 1, height do
+                        local line = ""
+                        for x = 1, width do
+                            if not pathfinding_nodes[y][x].is_passable then
+                                line = line .. "x"
+                            else
+                                line = line .. " "
+                            end
+                        end
+                        print(line)
+                    end
+
+                    os.execute("sleep 1")
+                    os.execute("clear")
+
+                    local path = a_star.calculate_path(
+                        pathfinding_nodes,
+                        width,
+                        height,
+                        corridor_point.x,
+                        corridor_point.y,
+                        room_point.x,
+                        room_point.y
+                    )
+
+                    for _, node in ipairs(changed_nodes) do
+                        pathfinding_nodes[node.y][node.x].is_passable = false
+                    end
+                    set_path_endpoint_as_passable(room_point, pathfinding_nodes, false)
 
                     if path then
                         table.insert(paths, path)
@@ -173,12 +232,14 @@ local function connect_rooms_with_corridors(rooms, width, height, pathfinding_no
         local next_room = rooms_copy[1]
         table.remove(rooms_copy, 1) -- Remove the closest room from the copy
 
-        local paths = calculate_possible_paths_between_rooms(current_room, next_room, width, height, pathfinding_nodes)
+        local paths = calculate_possible_paths_between_rooms(current_room, next_room, width, height, pathfinding_nodes,
+            corridors)
         local shortest_path = get_shortest_path(paths)
 
         if shortest_path then
             update_pathfinding_nodes_with_corridor(pathfinding_nodes, shortest_path)
-            table.insert(corridors, shortest_path)
+            table.insert(corridors,
+                { path = shortest_path, connected_rooms = { [current_room] = true, [next_room] = true } })
             create_door(current_room, shortest_path[1])
             create_door(next_room, shortest_path[#shortest_path])
         end

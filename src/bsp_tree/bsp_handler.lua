@@ -26,7 +26,7 @@ end
 
 local function add_corridors_to_map(corridors, map)
     for _, corridor in ipairs(corridors) do
-        for _, node in ipairs(corridor) do
+        for _, node in ipairs(corridor.path) do
             map[node.y][node.x] = misc.map_char.floor
             for _, dir in ipairs(misc.directions) do
                 local x = node.x + dir[1]
