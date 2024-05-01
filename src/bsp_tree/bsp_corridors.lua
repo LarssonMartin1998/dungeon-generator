@@ -236,7 +236,7 @@ local function connect_rooms_with_corridors(rooms, width, height, pathfinding_no
         local shortest_path_data = get_shortest_path(paths)
 
         if shortest_path_data then
-            update_pathfinding_nodes_with_corridor(pathfinding_nodes, shortest_path_data)
+            update_pathfinding_nodes_with_corridor(pathfinding_nodes, shortest_path_data.path)
             table.insert(corridors, create_corridor(shortest_path_data.path, current_room, next_room))
 
             if shortest_path_data.is_corridor_path then
