@@ -16,6 +16,23 @@ local function init_map(width, height)
     return map
 end
 
+local function reverse_pathfinding_passage_state(pathfinding_nodes, width, height)
+    for y = 1, height do
+        for x = 1, width do
+            pathfinding_nodes[y][x].is_passable = not pathfinding_nodes[y][x].is_passable
+        end
+    end
+end
+
+local function get_randomized_map(config)
+    local map = init_map(config.map.width, config.map.height)
+    local pathfinding_nodes = a_star.create_nodes(config.map.width, config.map.height)
+    local rooms = bsp_handler.generate_with_bsp_trees(map, pathfinding_nodes, config)
+    reverse_pathfinding_passage_state(pathfinding_nodes, config.map.width, config.map.height)
+
+    return map, pathfinding_nodes, rooms
+end
+
 local function draw_map(map, width, height)
     for y = 1, height do
         local line = ""
@@ -43,10 +60,7 @@ function M.run()
         }
     }
 
-    local map = init_map(config.map.width, config.map.height)
-    local pathfinding_nodes = a_star.create_nodes(config.map.width, config.map.height)
-    bsp_handler.generate_with_bsp_trees(map, pathfinding_nodes, config)
-
+    local map = get_randomized_map(config)
     draw_map(map, config.map.width, config.map.height)
 end
 

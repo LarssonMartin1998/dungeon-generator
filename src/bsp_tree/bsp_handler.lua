@@ -57,6 +57,8 @@ function M.generate_with_bsp_trees(map, pathfinding_nodes, config)
     add_rooms_to_map(rooms, map)
     add_corridors_to_map(corridors, map)
     add_doors_to_map(rooms, map)
+
+    return rooms
 end
 
 return M
