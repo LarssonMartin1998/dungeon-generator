@@ -1,4 +1,5 @@
 local bsp_handler = require("src.bsp_tree.bsp_handler")
+local a_star = require("src.pathfinding.a_star")
 
 local M = {}
 
@@ -43,7 +44,8 @@ function M.run()
     }
 
     local map = init_map(config.map.width, config.map.height)
-    bsp_handler.generate_with_bsp_trees(map, config)
+    local pathfinding_nodes = a_star.create_nodes(config.map.width, config.map.height)
+    bsp_handler.generate_with_bsp_trees(map, pathfinding_nodes, config)
 
     draw_map(map, config.map.width, config.map.height)
 end

@@ -14,17 +14,6 @@ local function create_node(x, y, width, height)
     }
 end
 
-function M.create_nodes(width, height)
-    local nodes = {}
-    for y = 1, height do
-        nodes[y] = {}
-        for x = 1, width do
-            nodes[y][x] = create_node(x, y, width, height)
-        end
-    end
-    return nodes
-end
-
 local function is_inside_map(width, height, x, y)
     return x >= 1 and x <= width and y >= 1 and y <= height
 end
@@ -96,27 +85,15 @@ local function construct_path(goal_node, context)
     return path
 end
 
-local function din_mor(start_node, goal_node, node, open_set, context)
-    local node_data = get_or_create_path_data(context, node)
-    local is_in_open_set = false
-    for _, data in ipairs(open_set) do
-        if data == node_data then
-            is_in_open_set = true
-            break
+function M.create_nodes(width, height)
+    local nodes = {}
+    for y = 1, height do
+        nodes[y] = {}
+        for x = 1, width do
+            nodes[y][x] = create_node(x, y, width, height)
         end
     end
-
-    if node == start_node then
-        return "S"
-    elseif node == goal_node then
-        return "G"
-    elseif is_in_open_set then
-        return "O"
-    elseif not node.is_passable then
-        return "x"
-    else
-        return " "
-    end
+    return nodes
 end
 
 function M.calculate_path(nodes, width, height, start_x, start_y, goal_x, goal_y)
@@ -162,8 +139,8 @@ function M.calculate_path(nodes, width, height, start_x, start_y, goal_x, goal_y
                     goal_node.x,
                     goal_node.y
                 )
-                neighbor_data.total_estimated_cost = neighbor_data.cost_from_start + neighbor_data
-                    .estimated_cost_to_goal
+                neighbor_data.total_estimated_cost =
+                    neighbor_data.cost_from_start + neighbor_data.estimated_cost_to_goal
 
                 if not node_in_set(open_set, neighbor_data) then
                     table.insert(open_set, neighbor_data)

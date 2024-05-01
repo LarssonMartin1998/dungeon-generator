@@ -49,10 +49,10 @@ local function add_doors_to_map(rooms, map)
     end
 end
 
-function M.generate_with_bsp_trees(map, config)
+function M.generate_with_bsp_trees(map, pathfinding_nodes, config)
     local leaf = bsp_leaves.generate_leaves(config.map, config.leaves)
     local rooms = bsp_rooms.generate_rooms_from_leaves(leaf, config.rooms)
-    local corridors = bsp_corridors.generate_corridors(rooms, config.map)
+    local corridors = bsp_corridors.generate_corridors(rooms, pathfinding_nodes, config.map)
 
     add_rooms_to_map(rooms, map)
     add_corridors_to_map(corridors, map)

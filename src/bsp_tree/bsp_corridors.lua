@@ -254,8 +254,7 @@ local function connect_rooms_with_corridors(rooms, width, height, pathfinding_no
     return corridors
 end
 
-function M.generate_corridors(rooms, map_config)
-    local pathfinding_nodes = a_star.create_nodes(map_config.width, map_config.height)
+function M.generate_corridors(rooms, pathfinding_nodes, map_config)
     set_rooms_as_blocked_in_pathfinder(pathfinding_nodes, rooms, map_config.width, map_config.height)
 
     calculate_center_for_all_rooms(rooms)
