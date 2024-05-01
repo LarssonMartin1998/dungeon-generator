@@ -49,6 +49,9 @@ local function set_rooms_as_blocked_in_pathfinder(nodes, rooms, width, height)
     end
 end
 
+-- This implementation requires a lot of sorting, which might not be the most efficient way to do it.
+-- This could definitely be otimized, but for the sake of this project, I think it's fine.
+-- Additionally, in my opinion, the sorting has made the generation output way more interesting.
 local function sort_rooms_by_distance_to_position(rooms, position)
     table.sort(rooms, function(room1, room2)
         local distance1 = math.abs(room1.center.x - position.x) + math.abs(room1.center.y - position.y)
